@@ -1,0 +1,17 @@
+# Site estático: sem build. A pasta publicada é a raiz do projeto.
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Modelos 3D e imagens ficam em cache no navegador (economiza créditos de banda).
+# Ao trocar um arquivo, mude também o nome dele.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

@@ -1,0 +1,117 @@
+import { buscarCarro, esc } from "./carros.js";
+
+const raiz = document.getElementById("conteudo");
+const id = new URLSearchParams(location.search).get("id");
+const reduzMovimento = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function mostrarErro(texto) {
+  raiz.innerHTML = `<p class="msg erro">${esc(texto)} <a href="index.html">Voltar ao catálogo</a></p>`;
+}
+
+function montarPalco(c, nome) {
+  if (!c.modeloUrl) {
+    return c.imagem ? `<div class="palco"><div class="visor"><img src="${esc(c.imagem)}" alt="${esc(nome)}"></div>
+      <p class="aviso-modelo">Este carro ainda não tem modelo 3D.</p></div>` : "";
+  }
+  return `
+    <div class="palco">
+      <div class="visor">
+        <model-viewer id="mv" src="${esc(c.modeloUrl)}" ${c.imagem ? `poster="${esc(c.imagem)}"` : ""}
+          alt="Modelo 3D do ${esc(nome)}" camera-controls ${reduzMovimento ? "" : "auto-rotate autoplay"}
+          environment-image="neutral" shadow-intensity="1" exposure="1" interaction-prompt="none"
+          ar ar-modes="webxr scene-viewer quick-look" reveal="auto">
+          <button slot="ar-button" class="btn primario ar">Ver no seu ambiente</button>
+        </model-viewer>
+      </div>
+      <div class="comandos">
+        <button class="btn" id="btnGiro">${reduzMovimento ? "Girar automaticamente" : "Parar giro"}</button>
+        <button class="btn" id="btnCamera">Recentralizar câmera</button>
+        <span id="grupoAnim" hidden>
+          <select id="selAnim" aria-label="Animação do modelo"></select>
+          <button class="btn" id="btnAnim">${reduzMovimento ? "Reproduzir animação" : "Pausar animação"}</button>
+        </span>
+      </div>
+      <p class="aviso-modelo" id="avisoModelo">Arraste para girar, use a roda do mouse ou dois dedos para aproximar.</p>
+    </div>`;
+}
+
+function ligarControles() {
+  const mv = document.getElementById("mv");
+  if (!mv) return;
+  const btnGiro = document.getElementById("btnGiro");
+  const btnAnim = document.getElementById("btnAnim");
+  const selAnim = document.getElementById("selAnim");
+
+  btnGiro.addEventListener("click", () => {
+    mv.autoRotate = !mv.autoRotate;
+    btnGiro.textContent = mv.autoRotate ? "Parar giro" : "Girar automaticamente";
+  });
+  document.getElementById("btnCamera").addEventListener("click", () => {
+    mv.cameraOrbit = "0deg 75deg 105%";
+    mv.cameraTarget = "auto auto auto";
+    mv.fieldOfView = "auto";
+  });
+
+  mv.addEventListener("load", () => {
+    const animacoes = mv.availableAnimations || [];
+    if (!animacoes.length) return;
+    selAnim.innerHTML = animacoes.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join("");
+    selAnim.value = mv.animationName || animacoes[0];
+    document.getElementById("grupoAnim").hidden = false;
+  });
+  selAnim.addEventListener("change", () => { mv.animationName = selAnim.value; mv.play(); btnAnim.textContent = "Pausar animação"; });
+  btnAnim.addEventListener("click", () => {
+    if (mv.paused) { mv.play(); btnAnim.textContent = "Pausar animação"; }
+    else { mv.pause(); btnAnim.textContent = "Reproduzir animação"; }
+  });
+  mv.addEventListener("error", () => {
+    document.getElementById("avisoModelo").textContent =
+      "Não foi possível carregar o modelo 3D. Confira o caminho do arquivo no cadastro do carro.";
+  });
+}
+
+function montar(c) {
+  const nome = `${c.marca} ${c.modelo}`;
+  document.title = `${nome} | Garagem`;
+
+  const specs = [
+    ["Motor", c.motor, "", true],
+    ["Potência", c.potencia, "cv"],
+    ["Torque", c.torque, "kgfm"],
+    ["0 a 100 km/h", c.zeroA100, "s"],
+    ["Velocidade máxima", c.velocidadeMax, "km/h"],
+    ["Peso", c.peso, "kg"],
+  ].filter(([, valor]) => valor !== null && valor !== undefined && valor !== "");
+
+  const linhasSpec = specs.map(([rotulo, valor, unidade, largo]) =>
+    `<div${largo ? ' class="largo"' : ""}><dt>${rotulo}</dt><dd>${esc(valor)}${unidade ? `<small>${unidade}</small>` : ""}</dd></div>`).join("");
+
+  const curiosidades = String(c.curiosidades || "").split("\n").map((t) => t.trim()).filter(Boolean);
+
+  raiz.innerHTML = `
+    <article class="detalhe">
+      ${montarPalco(c, nome)}
+      <div class="info">
+        <h1>${esc(c.modelo)}</h1>
+        <div class="origem"><span>${esc(c.marca)}</span>${c.ano ? `<span>${esc(c.ano)}</span>` : ""}</div>
+        ${c.descricao ? `<p class="descricao">${esc(c.descricao)}</p>` : ""}
+        ${linhasSpec ? `<dl class="specs">${linhasSpec}</dl>` : ""}
+        ${curiosidades.length ? `<section class="curiosidades"><h2>Curiosidades</h2><ul>${curiosidades.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></section>` : ""}
+        ${c.credito ? `<p class="credito">Modelo 3D: ${esc(c.credito)}</p>` : ""}
+      </div>
+    </article>`;
+  ligarControles();
+}
+
+async function iniciar() {
+  if (!id) return mostrarErro("Nenhum carro foi selecionado.");
+  try {
+    const carro = await buscarCarro(id);
+    if (!carro) return mostrarErro("Carro não encontrado.");
+    montar(carro);
+  } catch (erro) {
+    console.error(erro);
+    mostrarErro("Não foi possível carregar este carro.");
+  }
+}
+iniciar();

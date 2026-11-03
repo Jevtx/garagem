@@ -1,0 +1,11 @@
+# Segredos e arquivos locais: nunca versionar
+.env
+.env.*
+*.pem
+serviceAccount*.json
+*-firebase-adminsdk-*.json
+.firebase/
+node_modules/
+.DS_Store
+Thumbs.db
+.vscode/

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Administração | Garagem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Condensed:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="wrap">
+      <a class="logo" href="index.html">Garagem</a>
+      <nav><button class="btn" id="btnSair" hidden>Sair</button></nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <form id="formLogin" class="login">
+      <h1>Entrar</h1>
+      <label>E-mail <input type="email" id="email" required autocomplete="username"></label>
+      <label>Senha <input type="password" id="senha" required autocomplete="current-password"></label>
+      <button class="btn primario" type="submit">Entrar</button>
+      <p id="avisoLogin" class="msg erro" role="alert"></p>
+    </form>
+
+    <div id="telaAdmin" class="admin" hidden>
+      <section>
+        <h2 id="tituloForm">Novo carro</h2>
+        <form id="formCarro">
+          <div class="form-grid">
+            <label>Marca <input name="marca" required maxlength="40"></label>
+            <label>Modelo <input name="modelo" required maxlength="60"></label>
+            <label>Ano <input name="ano" type="number" min="1886" max="2100"></label>
+            <label>Motor <input name="motor" maxlength="80" placeholder="Ex.: 1.6 boxer de 4 cilindros"></label>
+            <label>Potência (cv) <input name="potencia" type="number" step="any" min="0"></label>
+            <label>Torque (kgfm) <input name="torque" type="number" step="any" min="0"></label>
+            <label>0 a 100 km/h (s) <input name="zeroA100" type="number" step="any" min="0"></label>
+            <label>Velocidade máxima (km/h) <input name="velocidadeMax" type="number" step="any" min="0"></label>
+            <label>Peso (kg) <input name="peso" type="number" step="any" min="0"></label>
+            <label>Imagem de prévia <input name="imagem" placeholder="assets/img/fusca.jpg"></label>
+            <label class="cheio">Arquivo do modelo 3D <input name="modeloUrl" placeholder="assets/models/fusca.glb"></label>
+            <label class="cheio">Descrição <textarea name="descricao" maxlength="600"></textarea></label>
+            <label class="cheio">Curiosidades (uma por linha) <textarea name="curiosidades" maxlength="1200"></textarea></label>
+            <label class="cheio">Crédito do modelo 3D <input name="credito" maxlength="200" placeholder="Nome do autor, licença e link"></label>
+          </div>
+          <div class="acoes">
+            <button class="btn primario" type="submit" id="btnSalvar">Cadastrar carro</button>
+            <button class="btn" type="button" id="btnCancelar" hidden>Cancelar edição</button>
+          </div>
+          <p id="aviso" class="msg" role="status"></p>
+        </form>
+      </section>
+
+      <section>
+        <h2>Carros cadastrados</h2>
+        <table class="tabela">
+          <thead><tr><th>Marca</th><th>Modelo</th><th>Ano</th><th></th></tr></thead>
+          <tbody id="lista"></tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
