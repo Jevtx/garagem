@@ -102,8 +102,8 @@ formLogin.addEventListener("submit", async (e) => {
   $("avisoLogin").textContent = "";
   try {
     await signInWithEmailAndPassword(auth, $("email").value, $("senha").value);
-  } catch {
-    $("avisoLogin").textContent = "E-mail ou senha inválidos.";
+  } catch (erro) {
+$("avisoLogin").textContent = "Não foi possível entrar (" + erro.code + ").";
   }
 });
 

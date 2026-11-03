@@ -3,6 +3,11 @@ import { buscarCarro, esc } from "./carros.js";
 const raiz = document.getElementById("conteudo");
 const id = new URLSearchParams(location.search).get("id");
 const reduzMovimento = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ORBITA = "30deg 76deg 80%"; // ângulo inicial e distância da câmera (menor % = mais perto)
+
+// Escapa o texto e transforma endereços http(s) em links clicáveis.
+const comLinks = (texto) =>
+  esc(texto).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 
 function mostrarErro(texto) {
   raiz.innerHTML = `<p class="msg erro">${esc(texto)} <a href="index.html">Voltar ao catálogo</a></p>`;
@@ -17,7 +22,8 @@ function montarPalco(c, nome) {
     <div class="palco">
       <div class="visor">
         <model-viewer id="mv" src="${esc(c.modeloUrl)}" ${c.imagem ? `poster="${esc(c.imagem)}"` : ""}
-          alt="Modelo 3D do ${esc(nome)}" camera-controls ${reduzMovimento ? "" : "auto-rotate autoplay"}
+          alt="Modelo 3D do ${esc(nome)}" camera-controls touch-action="pan-y"
+          camera-orbit="${ORBITA}" min-camera-orbit="auto 15deg 35%" max-camera-orbit="auto 88deg 150%" ${reduzMovimento ? "" : "auto-rotate autoplay"}
           environment-image="neutral" shadow-intensity="1" exposure="1" interaction-prompt="none"
           ar ar-modes="webxr scene-viewer quick-look" reveal="auto">
           <button slot="ar-button" class="btn primario ar">Ver no seu ambiente</button>
@@ -47,7 +53,7 @@ function ligarControles() {
     btnGiro.textContent = mv.autoRotate ? "Parar giro" : "Girar automaticamente";
   });
   document.getElementById("btnCamera").addEventListener("click", () => {
-    mv.cameraOrbit = "0deg 75deg 105%";
+    mv.cameraOrbit = ORBITA;
     mv.cameraTarget = "auto auto auto";
     mv.fieldOfView = "auto";
   });
@@ -55,8 +61,10 @@ function ligarControles() {
   mv.addEventListener("load", () => {
     const animacoes = mv.availableAnimations || [];
     if (!animacoes.length) return;
-    selAnim.innerHTML = animacoes.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join("");
+    // Os nomes vêm do arquivo (geralmente em inglês), então mostramos "Animação 1, 2...".
+    selAnim.innerHTML = animacoes.map((a, i) => `<option value="${esc(a)}">Animação ${i + 1}</option>`).join("");
     selAnim.value = mv.animationName || animacoes[0];
+    selAnim.hidden = animacoes.length === 1;
     document.getElementById("grupoAnim").hidden = false;
   });
   selAnim.addEventListener("change", () => { mv.animationName = selAnim.value; mv.play(); btnAnim.textContent = "Pausar animação"; });
@@ -97,7 +105,7 @@ function montar(c) {
         ${c.descricao ? `<p class="descricao">${esc(c.descricao)}</p>` : ""}
         ${linhasSpec ? `<dl class="specs">${linhasSpec}</dl>` : ""}
         ${curiosidades.length ? `<section class="curiosidades"><h2>Curiosidades</h2><ul>${curiosidades.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></section>` : ""}
-        ${c.credito ? `<p class="credito">Modelo 3D: ${esc(c.credito)}</p>` : ""}
+        ${c.credito ? `<p class="credito">Modelo 3D: ${comLinks(c.credito)}</p>` : ""}
       </div>
     </article>`;
   ligarControles();
