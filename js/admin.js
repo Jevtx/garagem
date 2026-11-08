@@ -9,7 +9,7 @@ const formLogin = $("formLogin"), telaAdmin = $("telaAdmin"), btnSair = $("btnSa
 const form = $("formCarro"), lista = $("lista"), aviso = $("aviso");
 
 const campos = ["marca", "modelo", "ano", "motor", "potencia", "torque", "zeroA100",
-  "velocidadeMax", "peso", "imagem", "modeloUrl", "descricao", "curiosidades", "credito"];
+  "velocidadeMax", "peso", "imagem", "modeloUrl", "descricao", "curiosidades", "credito", "pontos"];
 const numericos = ["ano", "potencia", "torque", "zeroA100", "velocidadeMax", "peso"];
 
 let carros = [];
@@ -103,7 +103,10 @@ formLogin.addEventListener("submit", async (e) => {
   try {
     await signInWithEmailAndPassword(auth, $("email").value, $("senha").value);
   } catch (erro) {
-$("avisoLogin").textContent = "Não foi possível entrar (" + erro.code + ").";
+    console.error(erro);
+    $("avisoLogin").textContent = erro.code === "auth/invalid-credential"
+      ? "E-mail ou senha inválidos."
+      : `Não foi possível entrar (${erro.code}).`;
   }
 });
 

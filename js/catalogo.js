@@ -5,6 +5,26 @@ const contagem = document.getElementById("contagem");
 const msg = document.getElementById("msg");
 const busca = document.getElementById("busca");
 const filtroMarca = document.getElementById("filtroMarca");
+const ordenacao = document.getElementById("ordenacao");
+
+// Critérios de ordenação. Carros sem o valor do campo vão para o fim da lista.
+const porMarca = (a, b) =>
+  a.marca.localeCompare(b.marca, "pt-BR") || a.modelo.localeCompare(b.modelo, "pt-BR");
+
+const porNumero = (campo, sentido) => (a, b) => {
+  const semA = typeof a[campo] !== "number";
+  const semB = typeof b[campo] !== "number";
+  if (semA || semB) return semA - semB || porMarca(a, b);
+  return (a[campo] - b[campo]) * sentido || porMarca(a, b);
+};
+
+const criterios = {
+  marca: porMarca,
+  potencia: porNumero("potencia", -1),   // maior potência primeiro
+  zeroA100: porNumero("zeroA100", 1),    // menor tempo primeiro
+  anoNovo: porNumero("ano", -1),
+  anoAntigo: porNumero("ano", 1),
+};
 let carros = [];
 
 function cartao(c) {
@@ -29,6 +49,8 @@ function desenhar() {
   const visiveis = carros.filter((c) =>
     (!marca || c.marca === marca) && `${c.marca} ${c.modelo}`.toLowerCase().includes(termo));
 
+  visiveis.sort(criterios[ordenacao.value] || porMarca);
+
   grade.innerHTML = visiveis.map(cartao).join("");
   contagem.textContent = `${visiveis.length} ${visiveis.length === 1 ? "carro" : "carros"}`;
   msg.className = "msg";
@@ -52,4 +74,5 @@ async function iniciar() {
 
 busca.addEventListener("input", desenhar);
 filtroMarca.addEventListener("change", desenhar);
+ordenacao.addEventListener("change", desenhar);
 iniciar();

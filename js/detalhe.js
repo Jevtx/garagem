@@ -13,7 +13,21 @@ function mostrarErro(texto) {
   raiz.innerHTML = `<p class="msg erro">${esc(texto)} <a href="index.html">Voltar ao catálogo</a></p>`;
 }
 
-function montarPalco(c, nome) {
+// Lê os pontos de informação salvos como texto JSON no cadastro (campo "pontos").
+function lerPontos(c) {
+  try {
+    const lista = JSON.parse(c.pontos || "[]");
+    return Array.isArray(lista) ? lista.filter((p) => p && p.posicao && p.normal && p.titulo).slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+}
+
+const htmlPonto = (p, i) =>
+  `<button class="ponto" slot="hotspot-${i + 1}" data-position="${esc(p.posicao)}" data-normal="${esc(p.normal)}"
+    data-visibility-attribute="visible" data-indice="${i}" aria-label="${esc(p.titulo)}">${i + 1}</button>`;
+
+function montarPalco(c, nome, pontos) {
   if (!c.modeloUrl) {
     return c.imagem ? `<div class="palco"><div class="visor"><img src="${esc(c.imagem)}" alt="${esc(nome)}"></div>
       <p class="aviso-modelo">Este carro ainda não tem modelo 3D.</p></div>` : "";
@@ -27,6 +41,7 @@ function montarPalco(c, nome) {
           environment-image="neutral" shadow-intensity="1" exposure="1" interaction-prompt="none"
           ar ar-modes="webxr scene-viewer quick-look" reveal="auto">
           <button slot="ar-button" class="btn primario ar">Ver no seu ambiente</button>
+          ${pontos.map(htmlPonto).join("")}
         </model-viewer>
       </div>
       <div class="comandos">
@@ -37,16 +52,30 @@ function montarPalco(c, nome) {
           <button class="btn" id="btnAnim">${reduzMovimento ? "Reproduzir animação" : "Pausar animação"}</button>
         </span>
       </div>
-      <p class="aviso-modelo" id="avisoModelo">Arraste para girar, use a roda do mouse ou dois dedos para aproximar.</p>
+      <p class="aviso-modelo" id="avisoModelo">${pontos.length ? "Toque nos pontos numerados para ver detalhes. " : ""}Arraste para girar, use a roda do mouse ou dois dedos para aproximar.</p>
     </div>`;
 }
 
-function ligarControles() {
+function ligarControles(pontos = []) {
   const mv = document.getElementById("mv");
   if (!mv) return;
+  const aviso = document.getElementById("avisoModelo");
+  const textoPadrao = aviso.textContent;
   const btnGiro = document.getElementById("btnGiro");
   const btnAnim = document.getElementById("btnAnim");
   const selAnim = document.getElementById("selAnim");
+
+  // Clique em um ponto numerado: mostra o texto dele abaixo do visor.
+  mv.addEventListener("click", (e) => {
+    const botao = e.target.closest(".ponto");
+    if (!botao) return;
+    const jaAtivo = botao.classList.contains("ativo");
+    mv.querySelectorAll(".ponto").forEach((b) => b.classList.remove("ativo"));
+    if (jaAtivo) { aviso.textContent = textoPadrao; return; }
+    const p = pontos[Number(botao.dataset.indice)];
+    botao.classList.add("ativo");
+    aviso.innerHTML = `<strong>${esc(p.titulo)}</strong> ${esc(p.texto || "")}`;
+  });
 
   btnGiro.addEventListener("click", () => {
     mv.autoRotate = !mv.autoRotate;
@@ -80,6 +109,7 @@ function ligarControles() {
 
 function montar(c) {
   const nome = `${c.marca} ${c.modelo}`;
+  const pontos = lerPontos(c);
   document.title = `${nome} | Garagem`;
 
   const specs = [
@@ -98,7 +128,7 @@ function montar(c) {
 
   raiz.innerHTML = `
     <article class="detalhe">
-      ${montarPalco(c, nome)}
+      ${montarPalco(c, nome, pontos)}
       <div class="info">
         <h1>${esc(c.modelo)}</h1>
         <div class="origem"><span>${esc(c.marca)}</span>${c.ano ? `<span>${esc(c.ano)}</span>` : ""}</div>
@@ -108,7 +138,7 @@ function montar(c) {
         ${c.credito ? `<p class="credito">Modelo 3D: ${comLinks(c.credito)}</p>` : ""}
       </div>
     </article>`;
-  ligarControles();
+  ligarControles(pontos);
 }
 
 async function iniciar() {

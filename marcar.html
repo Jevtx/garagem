@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Marcar pontos | Garagem</title>
+  <meta name="theme-color" content="#272a2e">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Condensed:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+</head>
+<body>
+  <header class="topo">
+    <div class="wrap">
+      <a class="logo" href="index.html">Garagem</a>
+      <nav><a href="admin.html">Voltar à administração</a></nav>
+    </div>
+  </header>
+
+  <main class="wrap marcador">
+    <section class="palco">
+      <div class="visor">
+        <model-viewer id="mv" camera-controls touch-action="pan-y" camera-orbit="30deg 76deg 80%"
+          environment-image="neutral" shadow-intensity="1" alt="Modelo 3D para marcar pontos"></model-viewer>
+      </div>
+      <p class="aviso-modelo" id="status" role="status">Informe o caminho do modelo e clique em Carregar.</p>
+    </section>
+
+    <section class="painel-marcador">
+      <h1>Marcar pontos</h1>
+
+      <label>Arquivo do modelo 3D
+        <span class="linha-campo">
+          <input id="caminho" placeholder="assets/models/fusca-1974.glb">
+          <button class="btn" type="button" id="btnCarregar">Carregar</button>
+        </span>
+      </label>
+
+      <div id="novo" class="painel-marcador" hidden>
+        <h2>Novo ponto</h2>
+        <label>Título <input id="titulo" maxlength="40" placeholder="Ex.: Motor"></label>
+        <label>Texto <textarea id="texto" maxlength="200" placeholder="Uma curiosidade ou explicação curta"></textarea></label>
+        <span class="linha-campo">
+          <button class="btn primario" type="button" id="btnAdicionar">Adicionar ponto</button>
+          <button class="btn" type="button" id="btnDescartar">Descartar</button>
+        </span>
+      </div>
+
+      <div>
+        <h2>Pontos marcados</h2>
+        <ul id="lista" class="lista-pontos"></ul>
+      </div>
+
+      <label>Código para colar no cadastro
+        <textarea id="saida" readonly placeholder="Aparece aqui depois do primeiro ponto"></textarea>
+      </label>
+      <span class="linha-campo"><button class="btn" type="button" id="btnCopiar">Copiar código</button></span>
+      <p class="dica" id="aviso" role="status"></p>
+    </section>
+  </main>
+
+  <script type="module" src="js/marcar.js"></script>
+</body>
+</html>
